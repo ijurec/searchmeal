@@ -4,6 +4,7 @@ import android.app.SearchManager;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.DividerItemDecoration;
@@ -47,6 +48,7 @@ public class MainActivity extends AppCompatActivity implements SearchMealSyncTas
     private int mPageNumber = 1;
     private boolean isLoadingMoreData;
     private boolean isRefreshingData;
+    private boolean isBackToExitClickedTwice = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -242,5 +244,24 @@ public class MainActivity extends AppCompatActivity implements SearchMealSyncTas
     @Override
     public boolean onQueryTextChange(String newText) {
         return false;
+    }
+
+    @Override
+    public void onBackPressed() {
+        if (isBackToExitClickedTwice) {
+            super.onBackPressed();
+            return;
+        }
+
+        isBackToExitClickedTwice = true;
+        Toast.makeText(this, "Please, click BACK again to exit", Toast.LENGTH_SHORT).show();
+
+        new Handler().postDelayed(new Runnable() {
+
+            @Override
+            public void run() {
+                isBackToExitClickedTwice = false;
+            }
+        }, 2000);
     }
 }
