@@ -20,9 +20,9 @@ public class SearchMealSyncTask extends AsyncTask<String, Void, SearchItem> {
         void onReceive(SearchItem searchItem);
     }
 
-    public SearchMealSyncTask(SearchMealOnPostExecuteHandler searchMealHandler) {
+    public SearchMealSyncTask(SearchMealOnPostExecuteHandler searchMealHandler, Context context) {
         mSearchMealHandler = searchMealHandler;
-        mContext = (Context) mSearchMealHandler;
+        mContext = context;
     }
 
     @Override

@@ -98,7 +98,7 @@ public class SearchActivity extends AppCompatActivity implements SearchMealAdapt
             spnFilterText = NetworkUtil.SORT_BY_TRENDINGNESS;
         }
 
-        mSearchTask = new SearchMealSyncTask(this);
+        mSearchTask = new SearchMealSyncTask(this, this);
         mSearchTask.execute(searchQuery, spnFilterText, "");
 
         mTextSpinner.setVisibility(View.INVISIBLE);

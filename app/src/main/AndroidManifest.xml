@@ -11,35 +11,36 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".MainActivity"
+        <activity
+            android:name=".MainActivity"
             android:theme="@style/AppThemeNoActionBar">
-
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
             <!-- enable the search dialog to send searches to SearchableActivity -->
-            <meta-data android:name="android.app.default_searchable"
-                android:value=".SearchActivity"/>
+            <meta-data
+                android:name="android.app.default_searchable"
+                android:value=".SearchActivity" />
         </activity>
-
         <activity
             android:name=".SearchActivity"
             android:label="@string/label_search_list"
             android:parentActivityName=".MainActivity"
             android:theme="@style/AppThemeNoActionBar">
-
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".MainActivity" />
+
             <intent-filter>
                 <action android:name="android.intent.action.SEARCH" />
             </intent-filter>
-            <meta-data android:name="android.app.searchable"
-                android:resource="@xml/searchable"/>
-        </activity>
 
+            <meta-data
+                android:name="android.app.searchable"
+                android:resource="@xml/searchable" />
+        </activity>
         <activity
             android:name=".DetailActivity"
             android:label="@string/label_recipe_details"
@@ -48,28 +49,29 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".SearchActivity" />
         </activity>
-
         <activity
             android:name=".FavoritesActivity"
             android:label="@string/label_favorites_list"
             android:parentActivityName=".MainActivity">
-        <meta-data
-            android:name="android.support.PARENT_ACTIVITY"
-            android:value=".MainActivity" />
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".MainActivity" />
         </activity>
-
         <activity android:name=".SettingsActivity" />
 
         <provider
             android:name=".data.FavoritesProvider"
             android:authorities="com.example.searchmeal"
             android:exported="false" />
-
         <provider
-            android:authorities="com.example.searchmeal.data.SearchMealSuggestionProvider"
             android:name=".data.SearchMealSuggestionProvider"
+            android:authorities="com.example.searchmeal.data.SearchMealSuggestionProvider"
             android:exported="false" />
-
+        <provider
+            android:name=".data.CustomSuggestionsProvider"
+            android:authorities="com.example.searchmeal.data.CustomSuggestionsProvider"
+            android:enabled="true"
+            android:exported="false"/>
     </application>
 
 </manifest>
