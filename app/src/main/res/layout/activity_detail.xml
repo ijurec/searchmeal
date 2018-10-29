@@ -29,7 +29,9 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        tools:text="A title" />
+        tools:text="A title"
+        android:textSize="17sp"
+        android:textColor="@color/colorDark"/>
 
     <ImageView
         android:id="@+id/image_view_detail"
@@ -49,6 +51,8 @@
         android:layout_marginStart="24dp"
         android:layout_marginTop="20dp"
         android:text="@string/rank_detail"
+        android:textSize="15sp"
+        android:textColor="@color/colorDark"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/image_view_detail" />
 
@@ -59,6 +63,7 @@
         android:layout_marginLeft="8dp"
         android:layout_marginStart="8dp"
         tools:text="100"
+        android:textSize="15sp"
         app:layout_constraintBaseline_toBaselineOf="@+id/label_rank_detail"
         app:layout_constraintStart_toEndOf="@+id/label_rank_detail" />
 
@@ -68,6 +73,8 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
         android:text="@string/ingredients_detail"
+        android:textSize="15sp"
+        android:textColor="@color/colorDark"
         app:layout_constraintStart_toStartOf="@+id/label_rank_detail"
         app:layout_constraintTop_toBottomOf="@+id/label_rank_detail" />
 
@@ -82,6 +89,7 @@
         app:layout_constraintStart_toStartOf="@+id/label_ingredients_detail"
         app:layout_constraintTop_toBottomOf="@+id/label_ingredients_detail"
         tools:text="List of ingredients"
+        android:textSize="15sp"
         app:layout_constrainedWidth="true"
         app:layout_constraintHorizontal_bias="0"/>
 
@@ -89,8 +97,10 @@
         android:id="@+id/label_direction_detail"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
+        android:layout_marginTop="15dp"
         android:text="@string/directions_detail"
+        android:textSize="15sp"
+        android:textColor="@color/colorDark"
         app:layout_constraintStart_toStartOf="@+id/text_ingredients_detail"
         app:layout_constraintTop_toBottomOf="@+id/text_ingredients_detail" />
 
@@ -100,6 +110,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
         tools:text="Link"
+        android:textSize="15sp"
         android:textColorLink="@color/colorPrimary"
         app:layout_constraintStart_toStartOf="@+id/label_direction_detail"
         app:layout_constraintTop_toBottomOf="@+id/label_direction_detail" />

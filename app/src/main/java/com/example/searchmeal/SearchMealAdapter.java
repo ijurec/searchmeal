@@ -60,7 +60,7 @@ public class SearchMealAdapter extends RecyclerView.Adapter<SearchMealAdapter.Se
                 .centerCrop()
 //                .placeholder(R.drawable.user_placeholder)
 //                .error(R.drawable.user_placeholder_error)
-                .transform(new RoundedCornersTransformation(10, 0))
+                .transform(new RoundedCornersTransformation(7, 0))
                 .into(holder.imageListItemView, new com.squareup.picasso.Callback() {
 
                     @Override
