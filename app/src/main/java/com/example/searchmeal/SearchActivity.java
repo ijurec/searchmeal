@@ -12,6 +12,7 @@ import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ProgressBar;
@@ -30,16 +31,19 @@ public class SearchActivity extends AppCompatActivity implements SearchMealAdapt
 
     public static final String SPINNER_FILTER_ID = "filter_text";
 
-    private TextView mTextSpinner;
     private Spinner mSpinner;
     private RecyclerView mRecyclerView;
     private TextView mTextEmptyData;
     private ProgressBar mProgressBar;
     private SwipeRefreshLayout mSwipeRefresh;
+    private ProgressBar mHorizontalProgressBar;
 
     private SearchMealSyncTask mSearchTask;
     private SearchMealAdapter mSearchMealAdapter;
     private String query;
+    private boolean isRefreshingData;
+    private boolean isLoadingMoreData;
+    private int mPageNumber = 1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,11 +56,11 @@ public class SearchActivity extends AppCompatActivity implements SearchMealAdapt
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         }
 
-        mTextSpinner = findViewById(R.id.label_spinner_search_meal);
         mSpinner = findViewById(R.id.spinner_search_meal);
         mRecyclerView = findViewById(R.id.recycler_view_search_meal);
         mTextEmptyData = findViewById(R.id.label_search_empty);
         mProgressBar = findViewById(R.id.loading_indicator_search_meal);
+        mHorizontalProgressBar = findViewById(R.id.horizontal_loading_indicator_search_meal);
         mSwipeRefresh = findViewById(R.id.swipe_refresh_search_meal);
 
         LinearLayoutManager layoutManager =
@@ -65,6 +69,7 @@ public class SearchActivity extends AppCompatActivity implements SearchMealAdapt
         mRecyclerView.setHasFixedSize(true);
         mRecyclerView.addItemDecoration(new DividerItemDecoration(this,
                 layoutManager.getOrientation()));
+        mRecyclerView.addOnScrollListener(onScrollListener);
         mSearchMealAdapter = new SearchMealAdapter(this);
         mRecyclerView.setAdapter(mSearchMealAdapter);
 
@@ -98,31 +103,88 @@ public class SearchActivity extends AppCompatActivity implements SearchMealAdapt
             spnFilterText = NetworkUtil.SORT_BY_TRENDINGNESS;
         }
 
-        mSearchTask = new SearchMealSyncTask(this);
-        mSearchTask.execute(searchQuery, spnFilterText, "");
+        mSpinner.setEnabled(false);
 
-        mTextSpinner.setVisibility(View.INVISIBLE);
-        mSpinner.setVisibility(View.INVISIBLE);
-        mRecyclerView.setVisibility(View.INVISIBLE);
-        mTextEmptyData.setVisibility(View.INVISIBLE);
-        mProgressBar.setVisibility(View.VISIBLE);
+        if (isRefreshingData && isLoadingMoreData) {
+            if (mHorizontalProgressBar.getVisibility() == View.VISIBLE) {
+                mPageNumber = 1;
+                mSearchTask.cancel(true);
+                mSearchTask = new SearchMealSyncTask(this);
+                mSearchTask.execute(searchQuery, spnFilterText, String.valueOf(mPageNumber++));
+
+                mHorizontalProgressBar.setVisibility(View.INVISIBLE);
+            }
+            isLoadingMoreData = false;
+        } else if (isRefreshingData) {
+            mPageNumber = 1;
+            mSearchTask = new SearchMealSyncTask(this);
+            mSearchTask.execute(searchQuery, spnFilterText, String.valueOf(mPageNumber++));
+        } else if (isLoadingMoreData) {
+            mSearchTask = new SearchMealSyncTask(this);
+            mSearchTask.execute(searchQuery, spnFilterText, String.valueOf(mPageNumber++));
+
+            mHorizontalProgressBar.setVisibility(View.VISIBLE);
+        } else {
+            mPageNumber = 1;
+            mSearchTask = new SearchMealSyncTask(this);
+            mSearchTask.execute(searchQuery, spnFilterText, String.valueOf(mPageNumber++));
+
+            mRecyclerView.setVisibility(View.INVISIBLE);
+            mTextEmptyData.setVisibility(View.INVISIBLE);
+            mProgressBar.setVisibility(View.VISIBLE);
+
+            getWindow().setFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,
+                    WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
+        }
     }
 
     @Override
     public void onReceive(SearchItem searchItem) {
-        mTextSpinner.setVisibility(View.VISIBLE);
-        mSpinner.setVisibility(View.VISIBLE);
-        mProgressBar.setVisibility(View.INVISIBLE);
-
-        if (searchItem != null && searchItem.getCount() != 0) {
+        mSpinner.setEnabled(true);
+        if (isLoadingMoreData && searchItem != null && searchItem.getCount() != 0) {
             mSearchMealAdapter.swapCursor(searchItem);
             mRecyclerView.setVisibility(View.VISIBLE);
+            isLoadingMoreData = false;
+        } else if (isRefreshingData && searchItem != null && searchItem.getCount() != 0) {
+            mSearchMealAdapter.swapCursor(null);
+            mSearchMealAdapter.swapCursor(searchItem);
+            mRecyclerView.setVisibility(View.VISIBLE);
+            mTextEmptyData.setVisibility(View.INVISIBLE);
+            mRecyclerView.scrollToPosition(MainActivity.DEFAULT_POSITION);
+            isRefreshingData = false;
+        } else if (searchItem != null && searchItem.getCount() != 0) {
+            mSearchMealAdapter.swapCursor(null);
+            mSearchMealAdapter.swapCursor(searchItem);
+            mRecyclerView.setVisibility(View.VISIBLE);
+            mRecyclerView.scrollToPosition(MainActivity.DEFAULT_POSITION);
         } else {
+            isLoadingMoreData = false;
+            isRefreshingData = false;
             Toast.makeText(this, "There isn't any result", Toast.LENGTH_SHORT).show();
-            mTextEmptyData.setVisibility(View.VISIBLE);
+            if (mSearchMealAdapter.getSearchItem().getRecipes().size() == 0) {
+                mTextEmptyData.setVisibility(View.VISIBLE);
+            }
         }
+
+        mProgressBar.setVisibility(View.INVISIBLE);
+        mHorizontalProgressBar.setVisibility(View.INVISIBLE);
         mSwipeRefresh.setRefreshing(false);
+        getWindow().clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
     }
+
+    private RecyclerView.OnScrollListener onScrollListener = new RecyclerView.OnScrollListener() {
+
+        @Override
+        public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
+            if (!recyclerView.canScrollVertically(1) && dy != 0) {
+                // Load more results here
+                if (mHorizontalProgressBar.getVisibility() != View.VISIBLE) {
+                    isLoadingMoreData = true;
+                    searchRequest(query, mSpinner.getSelectedItemPosition());
+                }
+            }
+        }
+    };
 
     @Override
     public void onClick(String recipeId) {
@@ -154,6 +216,7 @@ public class SearchActivity extends AppCompatActivity implements SearchMealAdapt
 
     @Override
     public void onRefresh() {
+        isRefreshingData = true;
         searchRequest(query, mSpinner.getSelectedItemPosition());
     }
 }

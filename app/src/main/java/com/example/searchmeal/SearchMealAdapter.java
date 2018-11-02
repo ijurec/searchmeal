@@ -76,17 +76,15 @@ public class SearchMealAdapter extends RecyclerView.Adapter<SearchMealAdapter.Se
                         if (holder.progressItemView != null) {
                             holder.progressItemView.setVisibility(View.GONE);
                         }
-                        Toast.makeText(holder.itemView.getContext(),
-                                "Error during loading the image: " + recipe.getImageUrl(), Toast.LENGTH_SHORT).show();
-                        Log.e(TAG, e.toString());
+                        Log.e(TAG, e.toString() + " / Error during loading the image: " + recipe.getImageUrl());
                     }
                 });
         holder.textTitleItemView.setText(recipe.getTitle());
         String recipePublisher = holder.itemView.getContext().getString(R.string.publisher) + recipe.getPublisher();
         holder.textPublisherItemView.setText(recipePublisher);
-            holder.textRatingItemView.setText(NumberUtil.roundingRank(recipe.getSocialRank()));
-            holder.itemView.setTag(recipe.getRecipeId());
-        }
+        holder.textRatingItemView.setText(NumberUtil.roundingRank(recipe.getSocialRank()));
+        holder.itemView.setTag(recipe.getRecipeId());
+    }
 
     @Override
      public int getItemCount() {

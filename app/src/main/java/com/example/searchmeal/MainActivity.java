@@ -97,15 +97,15 @@ public class MainActivity extends AppCompatActivity implements SearchMealSyncTas
         if (isRefreshingData && isLoadingMoreData) {
             if (mHorizontalProgressBar.getVisibility() == View.VISIBLE) {
                 mPageNumber = 1;
-                mHorizontalProgressBar.setVisibility(View.INVISIBLE);
                 mSearchTask.cancel(true);
                 mSearchTask = new SearchMealSyncTask(this);
                 mSearchTask.execute("", spnFilterText, String.valueOf(mPageNumber++));
+
+                mHorizontalProgressBar.setVisibility(View.INVISIBLE);
             }
             isLoadingMoreData = false;
         } else if (isRefreshingData) {
             mPageNumber = 1;
-
             mSearchTask = new SearchMealSyncTask(this);
             mSearchTask.execute("", spnFilterText, String.valueOf(mPageNumber++));
         } else if (isLoadingMoreData) {
@@ -114,12 +114,14 @@ public class MainActivity extends AppCompatActivity implements SearchMealSyncTas
 
             mHorizontalProgressBar.setVisibility(View.VISIBLE);
         } else {
+            mPageNumber = 1;
             mSearchTask = new SearchMealSyncTask(this);
             mSearchTask.execute("", spnFilterText, String.valueOf(mPageNumber++));
 
             mRecyclerView.setVisibility(View.INVISIBLE);
             mTextEmptyData.setVisibility(View.INVISIBLE);
             mProgressBar.setVisibility(View.VISIBLE);
+
             getWindow().setFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,
                     WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
         }
@@ -127,39 +129,39 @@ public class MainActivity extends AppCompatActivity implements SearchMealSyncTas
 
     @Override
     public void onReceive(SearchItem searchItem) {
-        mProgressBar.setVisibility(View.INVISIBLE);
-        mHorizontalProgressBar.setVisibility(View.INVISIBLE);
-
         if (isLoadingMoreData && searchItem != null && searchItem.getCount() != 0) {
             mSearchMealAdapter.swapCursor(searchItem);
             mRecyclerView.setVisibility(View.VISIBLE);
             isLoadingMoreData = false;
         } else if (isRefreshingData && searchItem != null && searchItem.getCount() != 0) {
-            isRefreshingData = false;
             mSearchMealAdapter.swapCursor(null);
             mSearchMealAdapter.swapCursor(searchItem);
             mRecyclerView.setVisibility(View.VISIBLE);
             mTextEmptyData.setVisibility(View.INVISIBLE);
             mRecyclerView.scrollToPosition(DEFAULT_POSITION);
+            isRefreshingData = false;
         } else if (searchItem != null && searchItem.getCount() != 0) {
             mSearchMealAdapter.swapCursor(null);
             mSearchMealAdapter.swapCursor(searchItem);
             mRecyclerView.setVisibility(View.VISIBLE);
             mRecyclerView.scrollToPosition(DEFAULT_POSITION);
         } else {
+            isLoadingMoreData = false;
+            isRefreshingData = false;
             Toast.makeText(this, "There isn't any result", Toast.LENGTH_SHORT).show();
             if (mSearchMealAdapter.getSearchItem().getRecipes().size() == 0) {
                 mTextEmptyData.setVisibility(View.VISIBLE);
             }
         }
 
+        mProgressBar.setVisibility(View.INVISIBLE);
+        mHorizontalProgressBar.setVisibility(View.INVISIBLE);
         mSwipeRefresh.setRefreshing(false);
         getWindow().clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
     }
 
     @Override
     public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-        mPageNumber = 1;
         searchRequest(position);
     }
 
@@ -171,7 +173,6 @@ public class MainActivity extends AppCompatActivity implements SearchMealSyncTas
     @Override
     public void onRefresh() {
         isRefreshingData = true;
-        mPageNumber = 1;
         searchRequest(mSpnFilter.getSelectedItemPosition());
     }
 
