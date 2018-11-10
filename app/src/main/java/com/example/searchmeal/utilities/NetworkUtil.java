@@ -1,18 +1,16 @@
 package com.example.searchmeal.utilities;
 
 import android.content.Context;
-import android.net.Uri;
-import android.support.annotation.Nullable;
 import android.util.Log;
 
 import com.example.searchmeal.R;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.Scanner;
+
+import okhttp3.HttpUrl;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
 
 public class NetworkUtil {
 
@@ -27,65 +25,45 @@ public class NetworkUtil {
     public static final String SORT_BY_RATING = "r";
     public static final String SORT_BY_TRENDINGNESS = "t";
 
+    private static OkHttpClient client = new OkHttpClient();
+
     static {
         System.loadLibrary("native-lib");
     }
 
     private native static String invokeNativeFunction();
 
+    public static String getSearchUrl(Context context, String query, String sort, String page) throws IOException {
+        HttpUrl weatherQueryUri = HttpUrl.parse(context.getString(R.string.api_url)).newBuilder()
+            .addPathSegment("search")
+            .addQueryParameter(KEY_PARAM, invokeNativeFunction())
+            .addQueryParameter(QUERY_PARAM, query)
+            .addQueryParameter(SORT_PARAM, sort)
+            .addQueryParameter(PAGE_PARAM, page)
+            .build();
 
-    public static URL getSearchUrl(Context context, String query, String sort, String page) {
-        Uri weatherQueryUri = Uri.parse(context.getString(R.string.api_url)).buildUpon()
-                .appendPath("search")
-                .appendQueryParameter(KEY_PARAM, invokeNativeFunction())
-                .appendQueryParameter(QUERY_PARAM, query)
-                .appendQueryParameter(SORT_PARAM, sort)
-                .appendQueryParameter(PAGE_PARAM, page)
-                .build();
+        Log.i(TAG, weatherQueryUri.toString());
 
-        return makeUrl(weatherQueryUri);
+        Request request = new Request.Builder()
+            .url(weatherQueryUri)
+            .build();
+        Response response = client.newCall(request).execute();
+        return response.body().string();
     }
 
-    public static URL getRecipeUrl(Context context, String recipeId) {
-        Uri weatherQueryUri = Uri.parse(context.getString(R.string.api_url)).buildUpon()
-                .appendPath("get")
-                .appendQueryParameter(KEY_PARAM, invokeNativeFunction())
-                .appendQueryParameter(RECIPE_ID_PARAM, recipeId)
-                .build();
+    public static String getRecipeUrl(Context context, String recipeId) throws IOException {
+        HttpUrl weatherQueryUri = HttpUrl.parse(context.getString(R.string.api_url)).newBuilder()
+            .addPathSegment("get")
+            .addQueryParameter(KEY_PARAM, invokeNativeFunction())
+            .addQueryParameter(RECIPE_ID_PARAM, recipeId)
+            .build();
 
-        return makeUrl(weatherQueryUri);
-    }
+        Log.i(TAG, weatherQueryUri.toString());
 
-    @Nullable
-    private static URL makeUrl(Uri weatherQueryUri) {
-        try {
-            String weatherQueryUriStr = weatherQueryUri.toString();
-            Log.i(TAG, weatherQueryUriStr);
-            return new URL(weatherQueryUriStr);
-        } catch (MalformedURLException e) {
-            Log.e(TAG, e.toString());
-            return null;
-        }
-    }
-
-    public static String getResponseFromHttpUrl(URL url) throws IOException {
-        HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
-        try {
-            InputStream in = urlConnection.getInputStream();
-
-            Scanner scanner = new Scanner(in);
-            scanner.useDelimiter("\\A");
-
-            boolean hasInput = scanner.hasNext();
-            String response = null;
-            if (hasInput) {
-                response = scanner.next();
-            }
-            scanner.close();
-            Log.i(TAG, response);
-            return response;
-        } finally {
-            urlConnection.disconnect();
-        }
+        Request request = new Request.Builder()
+            .url(weatherQueryUri)
+            .build();
+        Response response = client.newCall(request).execute();
+        return response.body().string();
     }
 }

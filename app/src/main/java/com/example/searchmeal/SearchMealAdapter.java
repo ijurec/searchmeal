@@ -87,7 +87,7 @@ public class SearchMealAdapter extends RecyclerView.Adapter<SearchMealAdapter.Se
     }
 
     @Override
-     public int getItemCount() {
+    public int getItemCount() {
         return mSearchItem == null ? 0 : mSearchItem.getRecipes().size();
     }
 
