@@ -1,11 +1,10 @@
 ## Introduction
 
-SearchMeal is a native Android client of food2fork.com, and helps to find a lot of great recipes for you.
+SearchMeal is a native Android client of food2fork resource, that helps you to find a lot of great recipes, share it, and make your list of favorites.
 
 ## How to
 
-To start you must go to http://food2fork.com/default/user/register to obtain api_key, then go to https://github.com/ijurec/searchmeal/blob/master/app/src/main/cpp/native-lib.cpp and copy key to NewStringUTF("") of return statement.NDK was used to protect of Reverse engineering.
-
+To start you must go to http://food2fork.com/default/user/register to obtain api_key, then go to https://github.com/ijurec/searchmeal/blob/master/app/src/main/cpp/native-lib.cpp and copy the key to NewStringUTF("") of the return statement. NDK was used to protect against reverse engineering.
 
 Here are some screenshots:
 

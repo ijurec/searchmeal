@@ -4,7 +4,7 @@
     <string name="label_edit_hint">type a meal</string>
     <string name="button_search">Search</string>
     <string name="label_sort">Sort by:</string>
-    <string name="api_url">https://food2fork.com/api</string>
+    <string name="api_url">https://food2fork.com/api/</string>
 
     <string-array name="sort_filter_array">
         <item>Top rated</item>

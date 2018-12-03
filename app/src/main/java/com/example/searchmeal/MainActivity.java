@@ -26,12 +26,15 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.searchmeal.data.SearchItem;
-import com.example.searchmeal.sync.SearchMealSyncTask;
-import com.example.searchmeal.utilities.NetworkUtil;
+import com.example.searchmeal.sync.SearchMealApi;
 
-public class MainActivity extends AppCompatActivity implements SearchMealSyncTask.SearchMealOnPostExecuteHandler,
-        SearchMealAdapter.SearchMealAdapterOnClickHandler, SearchView.OnQueryTextListener,
-        AdapterView.OnItemSelectedListener, SwipeRefreshLayout.OnRefreshListener {
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+
+public class MainActivity extends AppCompatActivity implements SearchMealAdapter.SearchMealAdapterOnClickHandler,
+        SearchView.OnQueryTextListener, AdapterView.OnItemSelectedListener,
+        SwipeRefreshLayout.OnRefreshListener, Callback<SearchItem> {
 
     public static final int DEFAULT_POSITION = 0;
 
@@ -42,8 +45,8 @@ public class MainActivity extends AppCompatActivity implements SearchMealSyncTas
     private ProgressBar mHorizontalProgressBar;
     private SwipeRefreshLayout mSwipeRefresh;
 
-    private SearchMealSyncTask mSearchTask;
     private SearchMealAdapter mSearchMealAdapter;
+    private Call<SearchItem> mRequest;
 
     private int mPageNumber = 1;
     private boolean isLoadingMoreData;
@@ -88,35 +91,40 @@ public class MainActivity extends AppCompatActivity implements SearchMealSyncTas
 
     private void searchRequest(int spnFilterPosition) {
         String spnFilterText;
+
         if (spnFilterPosition == 0) {
-            spnFilterText = NetworkUtil.SORT_BY_RATING;
+            spnFilterText = SearchMealApi.SORT_BY_RATING;
         } else {
-            spnFilterText = NetworkUtil.SORT_BY_TRENDINGNESS;
+            spnFilterText = SearchMealApi.SORT_BY_TRENDINGNESS;
         }
 
         if (isRefreshingData && isLoadingMoreData) {
             if (mHorizontalProgressBar.getVisibility() == View.VISIBLE) {
                 mPageNumber = 1;
-                mSearchTask.cancel(true);
-                mSearchTask = new SearchMealSyncTask(this);
-                mSearchTask.execute("", spnFilterText, String.valueOf(mPageNumber++));
+                mRequest.cancel();
+                mRequest = SearchMealApp.getSearchMealApi().syncMeal(SearchMealApp.invokeNativeFunction(),
+                        "", spnFilterText, String.valueOf(mPageNumber++));
+                mRequest.enqueue(this);
 
                 mHorizontalProgressBar.setVisibility(View.INVISIBLE);
             }
             isLoadingMoreData = false;
         } else if (isRefreshingData) {
             mPageNumber = 1;
-            mSearchTask = new SearchMealSyncTask(this);
-            mSearchTask.execute("", spnFilterText, String.valueOf(mPageNumber++));
+            mRequest = SearchMealApp.getSearchMealApi().syncMeal(SearchMealApp.invokeNativeFunction(),
+                    "", spnFilterText, String.valueOf(mPageNumber++));
+            mRequest.enqueue(this);
         } else if (isLoadingMoreData) {
-            mSearchTask = new SearchMealSyncTask(this);
-            mSearchTask.execute("", spnFilterText, String.valueOf(mPageNumber++));
+            mRequest = SearchMealApp.getSearchMealApi().syncMeal(SearchMealApp.invokeNativeFunction(),
+                    "", spnFilterText, String.valueOf(mPageNumber++));
+            mRequest.enqueue(this);
 
             mHorizontalProgressBar.setVisibility(View.VISIBLE);
         } else {
             mPageNumber = 1;
-            mSearchTask = new SearchMealSyncTask(this);
-            mSearchTask.execute("", spnFilterText, String.valueOf(mPageNumber++));
+            mRequest = SearchMealApp.getSearchMealApi().syncMeal(SearchMealApp.invokeNativeFunction(),
+                    "", spnFilterText, String.valueOf(mPageNumber++));
+            mRequest.enqueue(this);
 
             mRecyclerView.setVisibility(View.INVISIBLE);
             mTextEmptyData.setVisibility(View.INVISIBLE);
@@ -128,7 +136,9 @@ public class MainActivity extends AppCompatActivity implements SearchMealSyncTas
     }
 
     @Override
-    public void onReceive(SearchItem searchItem) {
+    public void onResponse(Call<SearchItem> call, Response<SearchItem> response) {
+        SearchItem searchItem = response.body();
+
         if (isLoadingMoreData && searchItem != null && searchItem.getCount() != 0) {
             mSearchMealAdapter.swapCursor(searchItem);
             mRecyclerView.setVisibility(View.VISIBLE);
@@ -158,6 +168,11 @@ public class MainActivity extends AppCompatActivity implements SearchMealSyncTas
         mHorizontalProgressBar.setVisibility(View.INVISIBLE);
         mSwipeRefresh.setRefreshing(false);
         getWindow().clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
+    }
+
+    @Override
+    public void onFailure(Call<SearchItem> call, Throwable t) {
+
     }
 
     @Override

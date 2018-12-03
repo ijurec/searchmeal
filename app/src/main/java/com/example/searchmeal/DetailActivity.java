@@ -22,13 +22,17 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.searchmeal.data.Recipe;
-import com.example.searchmeal.sync.RecipeMealSyncTask;
+import com.example.searchmeal.data.RecipeItem;
 import com.example.searchmeal.utilities.NumberUtil;
 import com.example.searchmeal.utilities.SearchMealContentValueUtil;
 import com.squareup.picasso.Picasso;
 import com.example.searchmeal.data.FavoritesContract.FavoriteEntry;
 
-public class DetailActivity extends AppCompatActivity implements RecipeMealSyncTask.RecipeMealOnPostExecuteHandler {
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+
+public class DetailActivity extends AppCompatActivity implements Callback<RecipeItem> {
 
     private TextView mTitle;
     private ImageView mImageView;
@@ -38,10 +42,11 @@ public class DetailActivity extends AppCompatActivity implements RecipeMealSyncT
     private ConstraintLayout mConstraintLayout;
     private ProgressBar mProgressBar;
 
-    private RecipeMealSyncTask mRecipeMealSyncTask;
     private Recipe mRecipe;
     private String mRecipeId;
     private boolean mIsFavorite = false;
+
+    private Call<RecipeItem> mRequest;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -62,8 +67,9 @@ public class DetailActivity extends AppCompatActivity implements RecipeMealSyncT
         mProgressBar = findViewById(R.id.recipe_loading_indicator);
 
         mRecipeId = getIntent().getStringExtra("recipe_id");
-        mRecipeMealSyncTask = new RecipeMealSyncTask(this, this);
-        mRecipeMealSyncTask.execute(mRecipeId);
+
+        mRequest = SearchMealApp.getSearchMealApi().syncRecipe(SearchMealApp.invokeNativeFunction(), mRecipeId);
+        mRequest.enqueue(this);
 
         mConstraintLayout.setVisibility(View.INVISIBLE);
         mProgressBar.setVisibility(View.VISIBLE);
@@ -72,7 +78,10 @@ public class DetailActivity extends AppCompatActivity implements RecipeMealSyncT
     }
 
     @Override
-    public void onReceive(Recipe recipe) {
+    public void onResponse(Call<RecipeItem> call, Response<RecipeItem> response) {
+        RecipeItem recipeItem = response.body();
+        Recipe recipe = recipeItem.getRecipe();
+
         if (recipe != null) {
             recipe.setRecipeId(mRecipeId);
             mRecipe = recipe;
@@ -108,6 +117,11 @@ public class DetailActivity extends AppCompatActivity implements RecipeMealSyncT
             Toast.makeText(getApplicationContext(), "There isn't any result", Toast.LENGTH_SHORT).show();
             finish();
         }
+    }
+
+    @Override
+    public void onFailure(Call<RecipeItem> call, Throwable t) {
+
     }
 
     @Override
@@ -201,6 +215,6 @@ public class DetailActivity extends AppCompatActivity implements RecipeMealSyncT
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        mRecipeMealSyncTask.cancel(true);
+        mRequest.cancel();
     }
 }
