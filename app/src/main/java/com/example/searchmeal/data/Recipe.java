@@ -3,18 +3,39 @@ package com.example.searchmeal.data;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import com.google.gson.annotations.Expose;
+import com.google.gson.annotations.SerializedName;
+
 import java.util.List;
 
 public class Recipe implements Parcelable {
 
+    @SerializedName("recipe_id")
+    @Expose
     private String recipeId;
+    @SerializedName("publisher")
+    @Expose
     private String publisher;
+    @SerializedName("social_rank")
+    @Expose
     private String socialRank;
+    @SerializedName("f2f_url")
+    @Expose
     private String f2fUrl;
+    @SerializedName("publisher_url")
+    @Expose
     private String publisherUrl;
+    @SerializedName("title")
+    @Expose
     private String title;
+    @SerializedName("source_url")
+    @Expose
     private String sourceUrl;
+    @SerializedName("image_url")
+    @Expose
     private String imageUrl;
+    @SerializedName("ingredients")
+    @Expose
     private List<String> ingredients;
 
     public Recipe () {

@@ -5,9 +5,6 @@ import android.os.AsyncTask;
 import android.util.Log;
 
 import com.example.searchmeal.data.SearchItem;
-import com.example.searchmeal.utilities.SearchMealJsonUtil;
-
-import org.json.JSONException;
 
 public class SearchMealSyncTask extends AsyncTask<String, Void, SearchItem> {
 
@@ -27,13 +24,9 @@ public class SearchMealSyncTask extends AsyncTask<String, Void, SearchItem> {
 
     @Override
     protected SearchItem doInBackground(String[] params) {
-        String result = SearchMealSync.syncMeal(mContext, params[0], params[1], params[2]);
         SearchItem searchItem = null;
-        try {
-            if (result != null && !isCancelled()) searchItem = SearchMealJsonUtil.getSearchMealValuesFromJson(result);
-        } catch (JSONException e) {
-            Log.e(TAG, e.toString());
-        }
+        if (!isCancelled()) searchItem = SearchMealSync.syncMeal(mContext, params[0], params[1], params[2]);
+        Log.e(TAG, searchItem.toString());
         return searchItem;
     }
 

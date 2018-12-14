@@ -3,12 +3,19 @@ package com.example.searchmeal.data;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import com.google.gson.annotations.Expose;
+import com.google.gson.annotations.SerializedName;
+
 import java.util.ArrayList;
 import java.util.List;
 
 public class SearchItem implements Parcelable {
 
+    @SerializedName("count")
+    @Expose
     private int count;
+    @SerializedName("recipes")
+    @Expose
     private List<Recipe> recipes;
 
     public SearchItem() {
